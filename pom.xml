@@ -95,6 +95,10 @@
 							<artifactSet>
 								<excludes>
 									<exclude>app.ashcon:sportpaper</exclude>
+									<exclude>org.bouncycastle:bcpg-jdk15on</exclude>
+									<exclude>org.bouncycastle:bcprov-jdk15on</exclude>
+									<exclude>org.bouncycastle:bcpkix-jdk15on</exclude>
+									<exclude>org.jetbrains:annotations</exclude>
 								</excludes>
 							</artifactSet>
 							<filters>
