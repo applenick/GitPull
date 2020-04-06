@@ -1,95 +1,61 @@
 package io.yukon.gitpull;
 
-import com.sk89q.bukkit.util.CommandsManagerRegistration;
-import com.sk89q.minecraft.util.commands.*;
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
+import co.aikar.commands.BukkitCommandManager;
+import java.io.File;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
-import java.io.File;
-
 public class GitPull extends JavaPlugin {
-    public static GitPull inst;
-    private CommandsManager<CommandSender> commands;
-    private Repository repo;
 
-    public static GitPull get() {
-        return inst;
+  private BukkitCommandManager commands;
+  private Repository repo;
+
+  @Override
+  public void onEnable() {
+    this.getConfig().options().copyDefaults(true);
+    this.saveConfig();
+    this.reloadConfig();
+
+    SshSessionFactory.setInstance(new SshSessionFactory(this));
+    this.setupCommands();
+  }
+
+  private void setupCommands() {
+    this.commands = new BukkitCommandManager(this);
+    commands.enableUnstableAPI("help");
+    commands.registerDependency(Repository.class, repo);
+    commands.registerCommand(new GitCommands());
+  }
+
+  @Override
+  public void reloadConfig() {
+    super.reloadConfig();
+    try {
+      this.repo =
+          new FileRepositoryBuilder()
+              .setGitDir(new File(pullPath()))
+              .readEnvironment()
+              .findGitDir()
+              .build();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    public GitPull() {
-        inst = this;
-    }
+  public String pullPath() {
+    String path = "";
+    path += this.getConfig().getString("repo-path", "/");
+    if (!path.endsWith("/")) path += "/";
+    path += ".git";
+    return path;
+  }
 
-    @Override
-    public void onDisable() {
-    }
+  public String sshPassphrase() {
+    return getConfig().getString("ssh-passphrase", "password");
+  }
 
-    @Override
-    public void onEnable() {
-        this.getConfig().options().copyDefaults(true);
-        this.saveConfig();
-        this.reloadConfig();
-
-        SshSessionFactory.setInstance(new SshSessionFactory());
-        this.setupCommands();
-    }
-
-    private void setupCommands() {
-        this.commands = new CommandsManager<CommandSender>() {
-            @Override public boolean hasPermission(CommandSender sender, String perm) {
-                return sender.hasPermission(perm);
-            }
-        };
-
-        CommandsManagerRegistration cmdRegister = new CommandsManagerRegistration(this, this.commands);
-        cmdRegister.register(Commands.class);
-    }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        try {
-            this.commands.execute(cmd.getName(), args, sender, sender);
-        } catch (CommandPermissionsException e) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission.");
-        } catch (MissingNestedCommandException e) {
-            sender.sendMessage(ChatColor.RED + e.getUsage());
-        } catch (CommandUsageException e) {
-            sender.sendMessage(ChatColor.RED + e.getMessage());
-            sender.sendMessage(ChatColor.RED + e.getUsage());
-        } catch (WrappedCommandException e) {
-            if (e.getCause() instanceof NumberFormatException) {
-                sender.sendMessage(ChatColor.RED + "Number expected, string received instead.");
-            } else {
-                sender.sendMessage(ChatColor.RED + "An error has occurred. See console.");
-                e.printStackTrace();
-            }
-        } catch (CommandException e) {
-            sender.sendMessage(ChatColor.RED + e.getMessage());
-        }
-
-        return true;
-    }
-
-    @Override
-    public void reloadConfig() {
-        super.reloadConfig();
-
-        try {
-            this.repo = new FileRepositoryBuilder().setGitDir(new File(Config.pullPath()))
-                .readEnvironment()
-                .findGitDir()
-                .build();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Repository getRepo() {
-        return this.repo;
-    }
+  public String repoName() {
+    return getConfig().getString("repo-name", "repo");
+  }
 }

@@ -1,7 +1,9 @@
 name: GitPull
 main: io.yukon.gitpull.GitPull
 version: ${project.version}
-author: YukonAppleGeek
+authors: 
+  - YukonAppleGeek
+  - applenick
 
 permissions:
   gitpull.reload:
