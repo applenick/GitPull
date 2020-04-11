@@ -1,11 +1,24 @@
-# Repo-name - The name of the repo
+#
+# GitPull
+# Created by Yukon and updated by applenick
+#
+
+# ssh-passphrase - The passpharse provided to JVM to auth git access
+# Learn more about SSH https://help.github.com/en/github/authenticating-to-github/about-ssh
+ssh-passphrase: password
+
+ 
+# repo-name: - The name of the repo
 # Notes: This does not do anything, only used when notifying command sender.
 # (But defined makes the command feedback better ;D)
-repo-name: Repo
-
+# 
 # repo-path: The directory path to the git repo. 
 # Notes: Ensure this points to the root folder of a repo. A sub-folder may cause problems
-repo-path: /
 
-# ssh-passphrase - The passpharse if required
-ssh-passphrase: password
+repositories:
+  repo1:
+    repo-name: "First Repo"
+    repo-path: /path1/
+  repo2:
+    repo-name: "Second Repo"
+    repo-path: /path2/
